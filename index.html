@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DO AN 2</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.17.0/xlsx.full.min.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.2.9/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.2.9/firebase-database.js"></script>
+</head>
+
+<body style="background-color: #f0f0f0;">
+    <!-- Header Information -->
+    <header class="header-info">
+        <figure style="display: flex; justify-content: center; align-items: center; height: 100%; margin: 0;">
+            <img src="img/logo.png" alt="Logo Trường" class="school-logo" style="width: 100px;  height: auto;">
+        </figure>
+        <div class="project-info">
+            <h2 style="text-align: center;color: red;">HỆ THỐNG ĐIỀU KHIỂN GIÁM SÁT THÔNG MINH MÔ HÌNH CHĂN NUÔI GÀ CÔNG NGHIỆP</h2>
+            <p style="text-align: right;color: black;">Giáo Viên Hướng Dẫn: TS. Trương Quang Phúc</p>
+            <p style="text-align: right;color: black;">Sinh Viên Thực Hiện: Nguyễn Xuân Thông-23661015</p>
+            <p style="text-align: right;color: black">Sinh Viên Thực Hiện: Nguyễn Hoàng Sang-23661011</p>
+        </div>
+    </header>
+
+    <!-- Navbar -->
+    <nav class="navbar">
+        <div class="nav-logo">ĐIỀU KHIỂN GIÁM SÁT</div>
+
+        <ul class="nav-links">
+            <li><button onclick="openTab('tab1')">THỐNG KÊ</button></li>
+            <li><button onclick="openTab('tab2')">SƯỞI ẤM & LÀM MÁT</button></li>
+            <li><button onclick="openTab('tab5')">KHÔNG KHÍ</button></li>
+            <li><button onclick="openTab('tab3')">CHIẾU SÁNG</button></li>
+            <li><button onclick="openTab('tab4')">THỨC ĂN</button></li>
+        </ul>
+
+
+    </nav>
+
+    <!-- Tab 1: Dashboard -->
+    <div id="tab1" class="tab-content active">
+        <div class="section" style="padding: 20px; border: 2px solid #32cd32; border-radius: 10px; background-color: #f9f9f9;">
+            <div class="status-summary" style="  border: 2px solid #32cd32; border-radius: 10px; background-color: #E6F7FF; text-align: center;">
+                <h2>THÔNG BÁO</h2>
+                <p id="systemStatus1" style="font-size: 1.5em; color: #ff4500; font-weight: bold;">Tình trạng nhiệt độ, độ ẩm, và chất lượng không khí đang được giám sát...</p>
+                <p id="systemStatus2" style="font-size: 1.5em; color: #ff4500; font-weight: bold;">Tình trạng nhiệt độ, độ ẩm, và chất lượng không khí đang được giám sát...</p>
+                <p id="systemStatus3" style="font-size: 1.5em; color: #ff4500; font-weight: bold;">Tình trạng nhiệt độ, độ ẩm, và chất lượng không khí đang được giám sát...</p>
+
+            </div>
+            <h1>BIỂU ĐỒ DỮ LIỆU TRUNG BÌNH HÀNG NGÀY</h1>
+            <input type="date" id="selectedDate" />
+            <button class="btn-on" onclick="fetchDailyAverage()">Xem Chi Tiết</button>
+            <button class="btn-on" onclick="exportToExcel()">Xuất Dữ Liệu Ngày</button>
+            <br><br>
+            <input type="month" id="selectedMonth" />
+            <button class="btn-on" onclick="exportMonthlyAverageToExcel()">Xuất Dữ Liệu Tháng</button>
+            <button id="realTimeButton" style="display: none;" onclick="returnToRealTime()">Quay lại Dữ liệu Thời gian thực</button>
+            <canvas id="dailyDataChart" width="600" height="300"></canvas>
+            <br><br>
+
+
+        </div>
+    </div>
+
+    <!-- Tab 2: Sưởi Ấm & Làm Mát -->
+    <div id="tab2" class="tab-content">
+        <div class="section" style="padding: 20px; border: 2px solid #32cd32; border-radius: 10px; background-color: #f9f9f9;">
+            <div class="heating-cooling-title" style="background-color: #e0ffe0; padding: 10px; border-radius: 5px; text-align: center;">
+                <h1>SƯỚI ẤM & LÀM MÁT</h1>
+            </div>
+            <div class="control-panel" style="display: flex; justify-content: space-around;">
+                <div class="control-card" style="text-align: center; padding: 10px; border: 1px solid #32cd32; border-radius: 10px; background-color: #ffffff; width: 30%;">
+                    <h3>ĐÈN SƯỞI ẤM</h3>
+                    <img id="d01_img" src="img/den_off.png" alt="Đèn Sưởi" class="control-img" style="width: 80px; height: auto;">
+                    <div>
+                        <button class="btn btn-on" id="d01_on">Bật</button>
+                        <button class="btn btn-off" id="d01_off">Tắt</button>
+                    </div>
+                </div>
+                <div class="control-card" style="text-align: center; padding: 10px; border: 1px solid #32cd32; border-radius: 10px; background-color: #ffffff; width: 30%;">
+                    <h3>QUẠT LÀM MÁT</h3>
+                    <img id="q01_img" src="img/quat_off.png" alt="Quạt Làm Mát" class="control-img" style="width: 80px; height: auto;">
+                    <div>
+                        <button class="btn btn-on" id="q01_on">Bật</button>
+                        <button class="btn btn-off" id="q01_off">Tắt</button>
+                    </div>
+                </div>
+                <div class="control-card" style="text-align: center; padding: 10px; border: 1px solid #32cd32; border-radius: 10px; background-color: #ffffff; width: 30%;">
+                    <h3>NHIỆT ĐỘ & ĐỘ ẨM</h3>
+                    <div style="display: flex; align-items: center;">
+                        <div style="flex: 1; text-align: center;">
+                            <img src="img/temperature.png" alt="Temperature Icon" style="width: 50px; height: auto;">
+                            <h5>NHIỆT ĐỘ: <span style="color: #ff4500; font-weight: bold;font-size: larger;" id="nhietdo">32.3</span> °C</h5>
+                        </div>
+                        <div style="flex: 1; text-align: center;">
+                            <img src="img/humidity.png" alt="Humidity Icon" style="width: 50px; height: auto;">
+                            <h5>ĐỘ ẨM: <span style="color: #1e90ff; font-weight: bold;font-size: large;" id="doam">90</span> %</h5>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <p style="color: green;font-weight: bold; text-align: center; margin-top: 20px;" id="autoMessage">BẬT CHẾ ĐỘ THỦ CÔNG: CÓ THỂ ĐIỀU CHỈNH QUA NÚT NHẤN !!</p>
+    </div>
+
+
+    <!-- Tab 3: Chiếu Sáng -->
+    <div id="tab3" class="tab-content">
+        <div class="section " style="padding: 20px; border: 2px solid #32cd32; border-radius: 10px; background-color: #f9f9f9;">
+            <div class="lighting-title" style="background-color: #e0ffe0; padding: 10px; border-radius: 5px; text-align: center;">
+                <h1>CHIẾU SÁNG</h1>
+            </div>
+            <div class="control-panel" style="display: flex; justify-content: center;">
+                <div class="control-card" style="text-align: center; padding: 20px; border: 1px solid #32cd32; border-radius: 10px; background-color: #ffffff; width: 30%;">
+                    <h3>ĐÈN CHIẾU SÁNG</h3>
+                    <img id="d02_img" src="img/den_off.png" alt="Đèn Chiếu Sáng" class="control-img" style="width: 80px; height: auto;">
+                    <div style="margin-top: 15px;">
+                        <button class="btn btn-on" id="d02_on">Bật</button>
+                        <button class="btn btn-off" id="d02_off">Tắt</button>
+                    </div>
+                </div>
+            </div>
+            <div>
+                <div>
+                    <h3>ĐẶT LỊCH CHIẾU SÁNG</h3>
+                    <div style="overflow-x: auto;">
+                        <table style="width: 100%; border-collapse: collapse; text-align: center;">
+                            <thead>
+                                <tr style="background-color: #e0ffe0;">
+                                    <th style="padding: 10px; border: 1px solid #32cd32;">Thời Gian</th>
+                                    <th style="padding: 10px; border: 1px solid #32cd32;">Thứ Hai</th>
+                                    <th style="padding: 10px; border: 1px solid #32cd32;">Thứ Ba</th>
+                                    <th style="padding: 10px; border: 1px solid #32cd32;">Thứ Tư</th>
+                                    <th style="padding: 10px; border: 1px solid #32cd32;">Thứ Năm</th>
+                                    <th style="padding: 10px; border: 1px solid #32cd32;">Thứ Sáu</th>
+                                    <th style="padding: 10px; border: 1px solid #32cd32;">Thứ Bảy</th>
+                                    <th style="padding: 10px; border: 1px solid #32cd32;">Chủ Nhật</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td style="padding: 10px; border: 1px solid #32cd32;">Bật</td>
+                                    <td style="padding: 10px; border: 1px solid #32cd32;">
+                                        <input type="time" id="tt2on">
+                                    </td>
+                                    <td style="padding: 10px; border: 1px solid #32cd32;">
+                                        <input type="time" id="tt3on">
+                                    </td>
+                                    <td style="padding: 10px; border: 1px solid #32cd32;">
+                                        <input type="time" id="tt4on">
+                                    </td>
+                                    <td style="padding: 10px; border: 1px solid #32cd32;">
+                                        <input type="time" id="tt5on">
+                                    </td>
+                                    <td style="padding: 10px; border: 1px solid #32cd32;">
+                                        <input type="time" id="tt6on">
+                                    </td>
+                                    <td style="padding: 10px; border: 1px solid #32cd32;">
+                                        <input type="time" id="tt7on">
+                                    </td>
+                                    <td style="padding: 10px; border: 1px solid #32cd32;">
+                                        <input type="time" id="tt8on">
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td style="padding: 10px; border: 1px solid #32cd32;">Tắt</td>
+                                    <td style="padding: 10px; border: 1px solid #32cd32;">
+                                        <input type="time" id="tt2off">
+                                    </td>
+                                    <td style="padding: 10px; border: 1px solid #32cd32;">
+                                        <input type="time" id="tt3off">
+                                    </td>
+                                    <td style="padding: 10px; border: 1px solid #32cd32;">
+                                        <input type="time" id="tt4off">
+                                    </td>
+                                    <td style="padding: 10px; border: 1px solid #32cd32;">
+                                        <input type="time" id="tt5off">
+                                    </td>
+                                    <td style="padding: 10px; border: 1px solid #32cd32;">
+                                        <input type="time" id="tt6off">
+                                    </td>
+                                    <td style="padding: 10px; border: 1px solid #32cd32;">
+                                        <input type="time" id="tt7off">
+                                    </td>
+                                    <td style="padding: 10px; border: 1px solid #32cd32;">
+                                        <input type="time" id="tt8off">
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div style="margin-top: 20px; text-align: center;">
+                        <button class="btn btn-on" id="startScheduleButton1" onclick="setWeeklyTimers_1()">Bắt Đầu Hẹn Giờ</button>
+                        <button class="btn btn-off" id="cancelScheduleButton">Hủy Hẹn Giờ</button>
+                        <p style="color: #4763ff; font-weight: bold;">TRẠNG THÁI HIỆN TẠI:
+                            <span style="color: green; font-weight: bold;" id="deviceStatus_1">Đang lấy thông tin...</span>
+                        </p>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <!-- Tab 4: Thức Ăn -->
+    <div id="tab4" class="tab-content">
+        <div class="section" style="padding: 20px; border: 2px solid #32cd32; border-radius: 10px; background-color: #f9f9f9;">
+            <div class="feeding-title" style="background-color: #e0ffe0; padding: 10px;  border-radius: 5px; text-align: center;">
+                <h1>THỨC ĂN</h1>
+            </div>
+            <div class="control-panel" style="display: flex; justify-content: space-around;">
+                <div class="control-card" style="text-align: center; padding: 20px; border: 1px solid #32cd32; border-radius: 10px; background-color: #ffffff; width: 30%;">
+                    <h3>CHO GÀ ĂN</h3>
+                    <img id="g01_img" src="img/an_off.png" alt="Cho Gà Ăn" class="control-img" style="width: 80px; height: auto;">
+                    <div style="margin-top: 15px;">
+                        <button class="btn btn-on" id="g01_on">Bật</button>
+                        <button class="btn btn-off" id="g01_off">Tắt</button>
+                    </div>
+                </div>
+                <div class="control-card" style="text-align: center; padding: 20px; border: 1px solid #32cd32; border-radius: 10px; background-color: #ffffff; width: 30%;">
+                    <h3>Mực Thức Ăn</h3>
+                    <img id="foodLevelImg" src="img/food_full.png" alt="Mực Thức Ăn" style="width: 80px; height: auto;">
+                    <p id="foodLevelMessage" style="color: green; font-weight: bold;">Thức ăn vẫn đủ</p>
+                </div>
+            </div>
+            <div>
+                <h3>Đặt Lịch Cho Ăn</h3>
+                <div style="overflow-x: auto;">
+                    <table style="width: 100%; border-collapse: collapse; text-align: center;">
+                        <thead>
+                            <tr style="background-color: #e0ffe0;">
+                                <th style="padding: 10px; border: 1px solid #32cd32;">Thời Gian</th>
+                                <th style="padding: 10px; border: 1px solid #32cd32;">Thứ Hai</th>
+                                <th style="padding: 10px; border: 1px solid #32cd32;">Thứ Ba</th>
+                                <th style="padding: 10px; border: 1px solid #32cd32;">Thứ Tư</th>
+                                <th style="padding: 10px; border: 1px solid #32cd32;">Thứ Năm</th>
+                                <th style="padding: 10px; border: 1px solid #32cd32;">Thứ Sáu</th>
+                                <th style="padding: 10px; border: 1px solid #32cd32;">Thứ Bảy</th>
+                                <th style="padding: 10px; border: 1px solid #32cd32;">Chủ Nhật</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td style="padding: 10px; border: 1px solid #32cd32;">Bật</td>
+                                <td style="padding: 10px; border: 1px solid #32cd32;">
+                                    <input type="time" id="t2on">
+                                </td>
+                                <td style="padding: 10px; border: 1px solid #32cd32;">
+                                    <input type="time" id="t3on">
+                                </td>
+                                <td style="padding: 10px; border: 1px solid #32cd32;">
+                                    <input type="time" id="t4on">
+                                </td>
+                                <td style="padding: 10px; border: 1px solid #32cd32;">
+                                    <input type="time" id="t5on">
+                                </td>
+                                <td style="padding: 10px; border: 1px solid #32cd32;">
+                                    <input type="time" id="t6on">
+                                </td>
+                                <td style="padding: 10px; border: 1px solid #32cd32;">
+                                    <input type="time" id="t7on">
+                                </td>
+                                <td style="padding: 10px; border: 1px solid #32cd32;">
+                                    <input type="time" id="t8on">
+                                </td>
+                            </tr>
+                            <tr>
+                                <td style="padding: 10px; border: 1px solid #32cd32;">Tắt</td>
+                                <td style="padding: 10px; border: 1px solid #32cd32;">
+                                    <input type="time" id="t2off">
+                                </td>
+                                <td style="padding: 10px; border: 1px solid #32cd32;">
+                                    <input type="time" id="t3off">
+                                </td>
+                                <td style="padding: 10px; border: 1px solid #32cd32;">
+                                    <input type="time" id="t4off">
+                                </td>
+                                <td style="padding: 10px; border: 1px solid #32cd32;">
+                                    <input type="time" id="t5off">
+                                </td>
+                                <td style="padding: 10px; border: 1px solid #32cd32;">
+                                    <input type="time" id="t6off">
+                                </td>
+                                <td style="padding: 10px; border: 1px solid #32cd32;">
+                                    <input type="time" id="t7off">
+                                </td>
+                                <td style="padding: 10px; border: 1px solid #32cd32;">
+                                    <input type="time" id="t8off">
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div style="margin-top: 20px; text-align: center;">
+                    <button class="btn btn-on" id="startScheduleButton" onclick="setWeeklyTimers()">Bắt Đầu Hẹn Giờ</button>
+                    <button class="btn btn-off" id="cancelScheduleButton1">Hủy Hẹn Giờ</button>
+                    <p style="color: #4763ff; font-weight: bold;">TRẠNG THÁI HIỆN TẠI:
+                        <span style="color: green; font-weight: bold;" id="deviceStatus">Đang lấy thông tin...</span>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tab 5: Chất Lượng Không Khí -->
+    <div id="tab5" class="tab-content">
+        <div class="section" style="padding: 20px; border: 2px solid #32cd32; border-radius: 10px; background-color: #f9f9f9;">
+            <div class="air-quality-title" style="background-color: #e0ffe0; padding: 10px; border-radius: 5px; text-align: center;">
+                <h1>CHẤT LƯỢNG KHÔNG KHÍ</h1>
+            </div>
+            <div class="control-panel" style="display: flex; justify-content: space-around;">
+                <div class="control-card" style="text-align: center; padding: 10px; border: 1px solid #32cd32; border-radius: 10px; background-color: #ffffff; width: 40%;">
+                    <h3>QUẠT HÚT</h3>
+                    <img id="q02_img" src="img/quat_off.png" alt="Quạt Hút" class="control-img" style="width: 80px; height: auto;">
+                    <div>
+                        <button class="btn btn-on" id="q02_on">Bật</button>
+                        <button class="btn btn-off" id="q02_off">Tắt</button>
+                    </div>
+                </div>
+                <div class="air-quality-status" style="text-align: center; padding: 10px; border: 1px solid #32cd32; border-radius: 10px; background-color: #ffffff; width: 40%;">
+                    <div style="display: flex; align-items: center; justify-content: center; flex-direction: column; height: 100%;">
+                        <img src="img/air_quality.png" alt="Air Quality Icon" style="width: 50px; height: auto; margin-bottom: 10px;">
+                        <h5>CHỈ SỐ KHÔNG KHÍ (AQI): <span style="color: #32cd32; font-weight: bold;font-size: large;" id="khongkhi">46</span></h5>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <p style="color: green;font-weight: bold; text-align: center; margin-top: 20px;" id="autoMessage1">BẬT CHẾ ĐỘ THỦ CÔNG: CÓ THỂ ĐIỀU CHỈNH QUA NÚT NHẤN !!</p>
+    </div>
+
+    <audio id="warningSound" src="audio/blink.mp3"></audio>
+
+    <script src="data.js"></script>
+    <script src="control.js"></script>
+    <script src="control1.js"></script>
+    <script src="control2.js"></script>
+    <script src="control3.js"></script>
+    <script src="123.js"></script>
+
+    <script>
+        function openTab(tabId) {
+            const tabContent = document.querySelectorAll(".tab-content");
+            tabContent.forEach(tab => tab.classList.remove("active"));
+            document.getElementById(tabId).classList.add("active");
+        }
+
+        function checkFoodLevelAndCancelSchedule() {
+            if (foodLevel >= 15 && coDangTrongHenGioChoAn) {
+                cancelWeeklyTimers1();
+                firebase.database().ref("/eat").update({
+                    "eat-e": "OFF"
+                });
+                document.getElementById("g01_img").src = "./img/an_off.png";
+                alert("Thức ăn sắp hết, hẹn giờ đã bị hủy và cho ăn đã tắt!");
+            }
+        }
+    </script>
+</body>
+
+</html>
